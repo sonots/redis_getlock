@@ -30,9 +30,9 @@ This gem takes a following approach to resolve this problem.
 1. Expiration time is set to `2` (default) seconds
 2. Extend the lock in each `1` (default) sencond interval invoking another thread
 
-This way ensures to release orphaned lock in 2 seconds.
+This way ensures to release orphaned lock in 2 seconds. We are released from caring of the value of `timeout`!!
 
-Simple codes are as follows:
+Simple ruby codes to explain how this gem works are as follows:
 
 ```ruby
 loop do
@@ -82,6 +82,19 @@ Similarly with ruby standard library [mutex](https://ruby-doc.org/core-2.2.0/Mut
   * Obtains a lock, runs the block, and releases the lock when the block completes.
 * unlock
   * Releases the lock.
+
+Options of `RedisGetlock.new` are:
+
+* redis
+  * Provide a redis instance
+* key
+  * Key name for a distributed lock
+* logger
+  * Provide a logger for RedisGetlock (for debug)
+* timeout
+  * The expiration timeout of the lock. The default is `2` second. Users usually do not need to care of this because the expiration is automatically extended in a invoked thread.
+* interval
+  * Interval to extend lock expiration. Must be `timeout > interval`. The default is `1` second.
 
 ### Example
 
