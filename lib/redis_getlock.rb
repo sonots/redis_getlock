@@ -3,16 +3,16 @@ require "redis_getlock/version"
 require 'securerandom'
 
 class RedisGetlock
-  attr_reader :redis, :key, :logger, :timeout, :interval
+  attr_reader :redis, :key, :logger, :expire, :interval
 
-  TIMEOUT = 2
+  EXPIRE = 2
   INTERVAL = 1
 
-  def initialize(redis:, key:, logger: nil, timeout: TIMEOUT, interval: INTERVAL)
+  def initialize(redis:, key:, logger: nil, expire: EXPIRE, interval: INTERVAL)
     @redis = redis
     @key = key
     @logger = logger
-    @timeout = timeout
+    @expire = expire
     @interval = interval
   end
 
@@ -64,14 +64,14 @@ class RedisGetlock
   def lock_with_set_options
     uuid = SecureRandom.uuid
     loop do
-      break if redis.set(key, uuid, {nx: true, ex: timeout}) # key does not exist
+      break if redis.set(key, uuid, {nx: true, ex: expire}) # key does not exist
       sleep interval
     end
   end
 
   def keeplock_with_set_options
     loop do
-      redis.expire(key, timeout) # extend expiration
+      redis.expire(key, expire) # extend expiration
       sleep interval
     end
   end
@@ -81,13 +81,13 @@ class RedisGetlock
   def lock_without_set_options
     loop do
       current = Time.now.to_f
-      if redis.setnx(key, (current + timeout).to_s) # key does not exist
-        redis.expire(key, timeout)
+      if redis.setnx(key, (current + expire).to_s) # key does not exist
+        redis.expire(key, expire)
         break # acquire lock
       end
       expired = redis.get(key)
       if expired.to_f < current # key exists, but expired
-        compared = redis.getset(key, (current + timeout).to_s)
+        compared = redis.getset(key, (current + expire).to_s)
         break if expired == compared # acquire lock
       end
       sleep interval
@@ -97,7 +97,7 @@ class RedisGetlock
   def keeplock_without_set_options
     loop do
       current = Time.now.to_f
-      redis.setex(key, timeout,  (current + timeout).to_s) # extend expiration
+      redis.setex(key, expire,  (current + expire).to_s) # extend expiration
       sleep interval
     end
   end

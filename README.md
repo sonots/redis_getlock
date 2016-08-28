@@ -10,7 +10,7 @@ Simple ruby codes which [http://redis.io/commands/set](http://redis.io/commands/
 
 ```ruby
 loop do
-  break if redis.set(key, 'anystring', {nx: true, ex: timeout})
+  break if redis.set(key, 'anystring', {nx: true, ex: expire})
   sleep 1
 end
 puts 'get lock'
@@ -21,8 +21,8 @@ ensure
 end
 ```
 
-The problem here is the value of `timeout`.
-The expiration time `timeout` is necessary so that a lock will eventually be released even if a process is crashed or killed by SIGKILL before deleting the key.
+The problem here is the value of `expire`.
+The expiration time `expire` is necessary so that a lock will eventually be released even if a process is crashed or killed by SIGKILL before deleting the key.
 However, how long should we set if we are uncertain how long a job takes?
 
 This gem takes a following approach to resolve this problem.
@@ -30,7 +30,7 @@ This gem takes a following approach to resolve this problem.
 1. Expiration time is set to `2` (default) seconds
 2. Extend the lock in each `1` (default) sencond interval invoking another thread
 
-This way ensures to release orphaned lock in 2 seconds. We are released from caring of the value of `timeout`!!
+This way ensures to release orphaned lock in 2 seconds. We are released from caring of the value of `expire`!!
 
 Simple ruby codes to explain how this gem works are as follows:
 
@@ -91,10 +91,10 @@ Options of `RedisGetlock.new` are:
   * Key name for a distributed lock
 * logger
   * Provide a logger for RedisGetlock (for debug)
-* timeout
-  * The expiration timeout of the lock. The default is `2` second. Users usually do not need to care of this because the expiration is automatically extended in a invoked thread.
+* expire
+  * The expiration seconds of the lock. The default is `2` second. Users usually do not need to care of this because the expiration is automatically extended in a invoked thread.
 * interval
-  * Interval to extend lock expiration. Must be `timeout > interval`. The default is `1` second.
+  * Interval to extend lock expiration. Must be `expire > interval`. The default is `1` second.
 
 ### Example
 
