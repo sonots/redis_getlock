@@ -1,3 +1,9 @@
+# 0.3.1 (2016-08-29)
+
+Enhancements:
+
+* Add timeout option
+
 # 0.3.0 (2016-08-28)
 
 Enhancements:
