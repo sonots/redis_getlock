@@ -14,7 +14,7 @@ mutex = RedisGetlock.new(redis: Redis.new, key: 'redis_getlock', logger: Logger.
 puts 'redis-cli> del redis_getlock'
 mutex.synchronize do
   loop do
-    puts mutex.locked?
+    puts "locked?:#{mutex.locked?} self_locked?:#{mutex.self_locked?}"
     sleep 1
   end
 end
