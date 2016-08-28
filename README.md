@@ -77,11 +77,13 @@ Similarly with ruby standard library [mutex](https://ruby-doc.org/core-2.2.0/Mut
 * lock
   * Attempts to grab the lock and waits if it isn’t available.
 * locked?
-  * Returns true if this lock is currently held by some.
+  * Returns true if this lock is currently held by some (including myself).
 * synchronize {}
   * Obtains a lock, runs the block, and releases the lock when the block completes.
 * unlock
   * Releases the lock.
+* self_locked?
+  * Returns true if this lock is currently held by myself.
 
 Options of `RedisGetlock.new` are:
 

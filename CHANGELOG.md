@@ -1,3 +1,13 @@
+# 0.3.0 (2016-08-28)
+
+Enhancements:
+
+* Add #self_locked? method
+
+Changes:
+
+* Change payload value format to add #self_locked? method
+
 # 0.2.0 (2016-08-28)
 
 Changes:
