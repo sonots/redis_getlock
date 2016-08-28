@@ -1,3 +1,9 @@
+# 0.2.0 (2016-08-28)
+
+Changes:
+
+* Rename `timeout` option to `expire` option
+
 # 0.1.1 (2016-08-28)
 
 Changes:
