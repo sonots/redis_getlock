@@ -28,7 +28,7 @@ However, how long should we set if we are uncertain how long a job takes?
 This gem takes a following approach to resolve this problem.
 
 1. Expiration time is set to `2` (default) seconds
-2. Extend the lock in each `1` (default) sencond interval invoking another thread
+2. Extend the lock in each `1` (default) second interval invoking another thread
 
 This way ensures to release orphaned lock in 2 seconds. We are released from caring of the value of `expire`!!
 
@@ -75,11 +75,11 @@ Or install it yourself as:
 Similarly with ruby standard library [mutex](https://ruby-doc.org/core-2.2.0/Mutex.html), following methods are available:
 
 * lock
-  * Attempts to grab the lock and waits if it isn’t available.Returns true if successfully acquired a lock
+  * Attempts to grab the lock and waits if it isn’t available. Returns true if successfully acquired a lock
 * locked?
   * Returns true if this lock is currently held by some (including myself).
 * synchronize {}
-  * Obtains a lock, runs the block, and releases the lock when the block completes. Raises `RedisGetlock::LockError` error when failed to acquire a lock. 
+  * Obtains a lock, runs the block, and releases the lock when the block completes. Raises `RedisGetlock::LockError` error when failed to acquire a lock.
 * unlock
   * Releases the lock. Returns true if successfully released a lock
 * self_locked?
@@ -91,6 +91,8 @@ Options of `RedisGetlock.new` are:
   * Provide a redis instance
 * key
   * Key name for a distributed lock
+* timeout
+  * The timeout of trying to get the lock. A negative value means infinite timeout (default: -1)
 * logger
   * Provide a logger for RedisGetlock (for debug)
 * expire
