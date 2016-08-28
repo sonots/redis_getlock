@@ -3,14 +3,32 @@
 require "bundler/setup"
 require "redis_getlock"
 require 'logger'
+require 'optparse'
 
-if ARGV[0] == 'exit!'
+opts = {
+  timeout: -1,
+  kill: false
+}
+OptionParser.new.tap {|op|
+  op.on('--timeout VALUE') {|v|
+    opts[:timeout] = Float(v)
+  }
+  op.on('--kill') {|v|
+    opts[:kill] = true
+  }
+  op.parse(ARGV)
+}
+
+if opts[:kill]
   trap('INT') do
     exit!
   end
 end
 
-mutex = RedisGetlock.new(redis: Redis.new, key: 'redis_getlock', logger: Logger.new(STDOUT))
+mutex = RedisGetlock.new(
+  redis: Redis.new, key: 'redis_getlock', logger: Logger.new(STDOUT),
+  timeout: opts[:timeout],
+)
 puts 'redis-cli> del redis_getlock'
 mutex.synchronize do
   loop do
