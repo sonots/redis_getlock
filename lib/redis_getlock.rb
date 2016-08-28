@@ -17,7 +17,7 @@ class RedisGetlock
   end
 
   def lock
-    logger.info { "RedisGetlock: Wait acquiring a lock: #{key}" } if logger
+    logger.info { "#{log_head}Wait acquiring a redis lock '#{key}'" } if logger
     if set_options_available?
       lock_with_set_options
       @thr = Thread.new(&method(:keeplock_with_set_options))
@@ -25,13 +25,13 @@ class RedisGetlock
       lock_without_set_options
       @thr = Thread.new(&method(:keeplock_without_set_options))
     end
-    logger.info { "RedisGetlock: Acquired a lock: #{key}" } if logger
+    logger.info { "#{log_head}Acquired a redis lock '#{key}'" } if logger
   end
 
   def unlock
     @thr.terminate
     redis.del(key)
-    logger.info { "RedisGetlock: Released a lock: #{key}" } if logger
+    logger.info { "#{log_head}Released a redis lock '#{key}'" } if logger
   end
 
   def locked?
@@ -48,6 +48,10 @@ class RedisGetlock
   end
 
   private
+
+  def log_head
+    "PID-#{::Process.pid} TID-#{::Thread.current.object_id.to_s(36)}: "
+  end
 
   def set_options_available?
     return @set_options_avialble unless @set_options_avialble.nil?
