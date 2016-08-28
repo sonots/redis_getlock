@@ -6,7 +6,7 @@ require 'json'
 class RedisGetlock
   attr_reader :redis, :key, :logger, :timeout, :expire, :interval, :uuid
 
-  TIMEOUT = -1
+  TIMEOUT = -1 # infinity
   EXPIRE = 2
   INTERVAL = 1
 
@@ -66,7 +66,7 @@ class RedisGetlock
   def synchronize(&block)
     raise LockError unless lock
     begin
-      return yield
+      yield
     ensure
       unlock
     end
