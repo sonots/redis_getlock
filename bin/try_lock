@@ -1,0 +1,35 @@
+#!/usr/bin/env ruby
+
+require "bundler/setup"
+require "redis_getlock"
+require 'logger'
+require 'optparse'
+
+opts = {
+  kill: false
+}
+OptionParser.new.tap {|op|
+  op.on('--kill') {|v|
+    opts[:kill] = true
+  }
+  op.parse(ARGV)
+}
+
+if opts[:kill]
+  trap('INT') do
+    exit!
+  end
+end
+
+mutex = RedisGetlock.new(
+  redis: Redis.new, key: 'redis_getlock', logger: Logger.new(STDOUT),
+  timeout: -1,
+)
+if mutex.try_lock
+  loop do
+    puts "locked?:#{mutex.locked?} self_locked?:#{mutex.self_locked?}"
+    sleep 1
+  end
+else
+  puts 'exit'
+end

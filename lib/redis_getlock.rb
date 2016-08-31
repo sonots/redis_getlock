@@ -40,6 +40,23 @@ class RedisGetlock
     end
   end
 
+  def try_lock
+    if set_options_available?
+      locked = try_lock_with_set_options
+    else
+      locked = try_lock_without_set_options
+    end
+    @thr.terminate if @thr and @thr.alive?
+    if locked
+      @thr = Thread.new(&method(:keeplock))
+      logger.info { "#{log_head}Acquired a redis lock '#{key}'" } if logger
+      true
+    else
+      logger.info { "#{log_head}A redis lock is already acquired '#{key}'" } if logger
+      false
+    end
+  end
+
   def unlock
     @thr.terminate if @thr and @thr.alive?
     if self_locked?
@@ -89,32 +106,51 @@ class RedisGetlock
   def lock_with_set_options
     started = Time.now.to_f
     loop do
-      current = Time.now.to_f
-      payload = {uuid: uuid, expire_at: (current + expire).to_s}.to_json
-      return true if redis.set(key, payload, {nx: true, ex: expire}) # key does not exist
-      return false if timeout >= 0 and (current - started) >= timeout
+      locked = try_lock_with_set_options
+      return true if locked
+      break if timeout >= 0 and (Time.now.to_f - started) >= timeout
       sleep interval
     end
+    false
   end
 
   # redis < 2.6.12
   # ref. http://redis.io/commands/setnx
   def lock_without_set_options
+    started = Time.now.to_f
     loop do
-      current = Time.now.to_f
-      payload = {uuid: uuid, expire_at: (current + expire).to_s}.to_json
-      if redis.setnx(key, payload) # key does not exist
-        redis.expire(key, expire)
-        return true # acquire lock
-      end
-      previous = JSON.parse(redis.get(key))
-      if previous['expire_at'].to_f < current # key exists, but previous
-        compared = redis.getset(key, paylod)
-        return true if previous['expire_at'] == compared['expire_at'] # acquire lock
-      end
-      return false if timeout >= 0 and (current - started) >= timeout
+      locked = try_lock_without_set_options
+      return true if locked
+      break if timeout >= 0 and (Time.now.to_f - started) >= timeout
       sleep interval
     end
+    false
+  end
+
+  # redis >= 2.6.12
+  # ref. http://redis.io/commands/set
+  def try_lock_with_set_options
+    current = Time.now.to_f
+    payload = {uuid: uuid, expire_at: (current + expire).to_s}.to_json
+    return true if redis.set(key, payload, {nx: true, ex: expire}) # key does not exist
+    false
+  end
+
+  # redis < 2.6.12
+  # ref. http://redis.io/commands/setnx
+  def try_lock_without_set_options
+    current = Time.now.to_f
+    payload = {uuid: uuid, expire_at: (current + expire).to_s}.to_json
+    if redis.setnx(key, payload) # key does not exist
+      redis.expire(key, expire)
+      return true # acquire lock
+    end
+    previous = JSON.parse(redis.get(key))
+    if previous['expire_at'].to_f < current # key exists, but previous
+      compared = redis.getset(key, paylod)
+      return true if previous['expire_at'] == compared['expire_at'] # acquire lock
+    end
+    false
   end
 
   def keeplock
