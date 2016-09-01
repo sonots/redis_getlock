@@ -1,6 +1,6 @@
 # RedisGetlock
 
-Distributed locking using redis. Unlike other implementations avilable, this gem ensures releasing orphaned lock shortly.
+Distributed locking using redis. Unlike other implementations available, this gem ensures releasing orphaned lock shortly.
 
 # How It Works
 
