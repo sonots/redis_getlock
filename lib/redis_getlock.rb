@@ -23,7 +23,7 @@ class RedisGetlock
   end
 
   def lock
-    logger.info { "#{log_head}Wait #{timeout < 0 ? '' : "#{timeout} sec "}to acquire a mysql lock '#{key}'" } if logger
+    logger.info { "#{log_head}Wait #{timeout < 0 ? '' : "#{timeout} sec "}to acquire a redis lock '#{key}'" } if logger
     if set_options_available?
       locked = lock_with_set_options
     else
