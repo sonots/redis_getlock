@@ -1,3 +1,9 @@
+# 0.3.3 (2016-08-29)
+
+Fixes:
+
+* Fix log message `mysql lock` to `redis lock` (thanks to potato2003)
+
 # 0.3.2 (2016-08-29)
 
 Enhancements:
